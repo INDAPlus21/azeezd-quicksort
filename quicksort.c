@@ -3,6 +3,10 @@
 #include <time.h>
 
 #define NUMBERS "-0123456789"
+#define SWAP(a, b) \
+    temp = a;      \
+    a = b;         \
+    b = temp;
 
 static long amount = 0;
 static long array[2 << 18];
@@ -13,58 +17,69 @@ static long curr_val;
 static int negative = 0;
 static unsigned char chars[256] = {0};
 
-long partition(long *array, long low, long high)
+void partition(long *array, long low, long high, long *i, long *j)
 {
-    long pivot = array[high];
-    long low_index = low - 1;
+    *i = low;
+    *j = high;
+    long mid = low;
+    long pivot = array[low];
 
-    for (long j = low; j <= high - 1; j++)
+    while (mid <= *j)
     {
-        if (array[j] < pivot)
+        // three way partition
+        if (array[mid] < pivot)
         {
-            low_index++;
-            temp = array[low_index];
-            array[low_index] = array[j];
-            array[j] = temp;
+            SWAP(array[*i], array[mid])
+            (*i)++;
+            mid++;
         }
+        else if (array[mid] > pivot)
+        {
+            SWAP(array[*j], array[mid])
+            (*j)--;
+        }
+        else
+            mid++;
     }
-
-    temp = array[low_index + 1];
-    array[low_index + 1] = array[high];
-    array[high] = temp;
-
-    return low_index + 1;
 }
 
-long par_rand(long *array, long low, long high)
+void insertionSort(long *array, long low, long high)
 {
-    long r = rand() % (high - low) + low;
-
-    temp = array[r];
-    array[r] = array[high];
-    array[high] = temp;
-
-    partition(array, low, high);
+    long j;
+    for (size_t i = low + 1; i < high + 1; i++)
+    {
+        j = i;
+        while (j > 0 && array[j - 1] > array[j])
+        {
+            SWAP(array[j], array[j - 1])
+            j--;
+        }
+    }
 }
 
 void quicksort(long *array, long low, long high)
 {
-    if (low < high)
-    {
-            long index = par_rand(array, low, high); // partition
+    if (low >= high)
+        return;
 
-            quicksort(array, low, index-1);
-            quicksort(array, index + 1, high);
+    if (high - low <= 10)
+    {
+        insertionSort(array, low, high);
+        return;
     }
+    long i, j;
+    partition(array, low, high, &i, &j); // partition
+
+    quicksort(array, low, i - 1);
+    quicksort(array, j + 1, high);
 }
 
 int main()
 {
-
     srand(time(0));
-    for (unsigned char* ch = (unsigned char*) NUMBERS; *ch; ch++)
-        chars[*ch] = *ch;   
-    
+    for (unsigned char *ch = (unsigned char *)NUMBERS; *ch; ch++)
+        chars[*ch] = *ch;
+
     for (curr_char = getchar(); chars[curr_char]; curr_char = getchar())
         amount = amount * 10 + (curr_char - '0');
 
@@ -72,17 +87,25 @@ int main()
     {
         curr_val = 0;
         curr_char = getchar();
-              
+
         negative = curr_char == '-';
 
-        if (!negative) curr_val = curr_val * 10 + (curr_char - '0');
+        if (!negative)
+            curr_val = curr_val * 10 + (curr_char - '0');
 
         for (curr_char = getchar(); chars[curr_char] && curr_char != EOF; curr_char = getchar())
             curr_val = curr_val * 10 + (curr_char - '0');
 
         *arr_ptr++ = negative ? -curr_val : curr_val;
     } while (curr_char != EOF);
-    
+
+    size_t j;
+    for (size_t i = amount - 1; i > 0; i--)
+    {
+        j = rand() % (amount - i) + i;
+        SWAP(array[i], array[j])
+    }
+
     quicksort(array, 0, amount - 1);
 
     for (long i = 0; i < amount; i++)
@@ -90,4 +113,3 @@ int main()
 
     return 0;
 }
-
