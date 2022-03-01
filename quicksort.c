@@ -24,27 +24,28 @@ void partition(long *array, long low, long high, long *i, long *j)
     long mid = low;
     long pivot = array[low];
 
-    while (mid <= *j)
+    // Three way partition
+    while (mid <= *j) // Less throw to left of pivot
     {
-        // three way partition
         if (array[mid] < pivot)
         {
-            SWAP(array[*i], array[mid])
+            SWAP(array[*i], array[mid]) 
             (*i)++;
             mid++;
         }
-        else if (array[mid] > pivot)
+        else if (array[mid] > pivot) // Greater, throw to right of pivot
         {
             SWAP(array[*j], array[mid])
             (*j)--;
         }
-        else
+        else // Equality, just move pointer forward,
             mid++;
     }
 }
 
-void insertionSort(long *array, long low, long high)
+void insertionSort(long *array, long low, long high) 
 {
+    // Good ol' insertion sort but on a subarray
     long j;
     for (size_t i = low + 1; i < high + 1; i++)
     {
@@ -67,8 +68,9 @@ void quicksort(long *array, long low, long high)
         insertionSort(array, low, high);
         return;
     }
+
     long i, j;
-    partition(array, low, high, &i, &j); // partition
+    partition(array, low, high, &i, &j);
 
     quicksort(array, low, i - 1);
     quicksort(array, j + 1, high);
@@ -77,28 +79,33 @@ void quicksort(long *array, long low, long high)
 int main()
 {
     srand(time(0));
+
+    // Set up allowed characters array
     for (unsigned char *ch = (unsigned char *)NUMBERS; *ch; ch++)
         chars[*ch] = *ch;
 
-    for (curr_char = getchar(); chars[curr_char]; curr_char = getchar())
+    // Get amount
+    for (curr_char = getchar_unlocked(); chars[curr_char]; curr_char = getchar_unlocked())
         amount = amount * 10 + (curr_char - '0');
 
+    // Get other values
     do
     {
         curr_val = 0;
-        curr_char = getchar();
+        curr_char = getchar_unlocked();
 
         negative = curr_char == '-';
 
         if (!negative)
             curr_val = curr_val * 10 + (curr_char - '0');
 
-        for (curr_char = getchar(); chars[curr_char] && curr_char != EOF; curr_char = getchar())
+        for (curr_char = getchar_unlocked(); chars[curr_char] && curr_char != EOF; curr_char = getchar_unlocked())
             curr_val = curr_val * 10 + (curr_char - '0');
 
         *arr_ptr++ = negative ? -curr_val : curr_val;
     } while (curr_char != EOF);
 
+    // Fisher-Yates shuffle
     size_t j;
     for (size_t i = amount - 1; i > 0; i--)
     {
